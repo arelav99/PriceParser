@@ -1,0 +1,3 @@
+from stocks_api.prices_api import yield_stock_price, yield_trend_shift
+from stocks_api.news_api import NewsCollectionAPI
+from stocks_api.trends_with_news_api import yield_trend_change_with_news
