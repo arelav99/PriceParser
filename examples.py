@@ -27,7 +27,7 @@ async def example_of_yield_price_api_and_hist():
 
 async def example_of_yield_trend_shift():
     async for has_shifted in yield_trend_shift(
-        yield_stock_price('AAPL', '5s', '1mo'),
+        lambda: yield_stock_price('AAPL', '5s', '1mo'),
         [trend_has_shifted_linear_reg, trend_has_shifted_cusum, trend_has_shifted_sliding_window]
     ):
         if has_shifted:
@@ -61,4 +61,4 @@ async def example_of_yield_trend_shift_with_news():
 
 
 if __name__ == "__main__":
-    asyncio.run(example_of_fetch_news())
+    asyncio.run(example_of_yield_trend_shift())
