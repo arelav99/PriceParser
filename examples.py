@@ -40,8 +40,8 @@ async def example_of_fetch_news():
     ])
 
     while True:
-        await news_collector.fetch_news()
-        print(news_collector.get_n_latest_news(10))
+        news_collector = await news_collector.fetch_news()
+        print(news_collector.get_n_latest_news(3))
 
 async def example_of_yield_trend_shift_with_news():
     news_collector = NewsCollectionAPI([
@@ -61,4 +61,4 @@ async def example_of_yield_trend_shift_with_news():
 
 
 if __name__ == "__main__":
-    asyncio.run(example_of_yield_trend_shift())
+    asyncio.run(example_of_fetch_news())

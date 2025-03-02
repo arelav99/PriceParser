@@ -13,7 +13,7 @@ async def yield_trend_change_with_news(
     while True:  
         async for trend_has_shifted in trend_shifter_function():
             if trend_has_shifted: 
-                await news_generator.fetch_news()
+                news_generator = await news_generator.fetch_news()
 
                 yield news_generator.get_n_latest_news_in_range(
                     n_news,

@@ -7,19 +7,20 @@ from stocks_api.structures import News
 
 
 class NewsCollectionAPI:
-    __time_sorted_news = pd.DataFrame(
-        {'date_time':pd.Series([], dtype='datetime64[ns]'),
-         'title':pd.Series([], dtype='str'),
-         'link':pd.Series([], dtype='str'),
-         'uuid':pd.Series([], dtype='str'),
-         'source': pd.Series([], dtype='str')}
-    )
-
     def __init__(
             self,
             news_generators:  typing.Callable[..., typing.AsyncGenerator[typing.List[News], None]],
+            previous_news: pd.DataFrame = None
         ):
             self.generators = news_generators
+            self.__time_sorted_news = previous_news if previous_news is not None else \
+            pd.DataFrame(
+                {'date_time':pd.Series([], dtype='datetime64[ns]'),
+                'title':pd.Series([], dtype='str'),
+                'link':pd.Series([], dtype='str'),
+                'uuid':pd.Series([], dtype='str'),
+                'source': pd.Series([], dtype='str')}
+            )
 
     async def fetch_news(self):
         for news_generator in self.generators:
@@ -29,6 +30,8 @@ class NewsCollectionAPI:
                         self.__time_sorted_news,
                         pd.DataFrame([news.__dict__])
                     ])
+
+        return NewsCollectionAPI(self.generators, self.__time_sorted_news)
 
     def get_n_latest_news_in_range(self, n_news: int, start_date: datetime, end_date: datetime):
         return self.__time_sorted_news[
