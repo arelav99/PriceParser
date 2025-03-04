@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import typing
 
 import pandas as pd
@@ -25,7 +25,7 @@ class NewsCollectionAPI:
     async def fetch_news(self):
         for news_generator in self.generators:
             async for news in news_generator():
-                if news.uuid not in self.__time_sorted_news.uuid:
+                if news.uuid not in self.__time_sorted_news.uuid.values:
                     self.__time_sorted_news = pd.concat([
                         self.__time_sorted_news,
                         pd.DataFrame([news.__dict__])

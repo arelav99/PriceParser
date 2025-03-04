@@ -11,6 +11,7 @@ from stocks_api.callables import (
 from stocks_api import NewsCollectionAPI
 from stocks_api.callables import (
     yield_dummy_twitter_news,
+    yield_twitter_news,
     yield_yahoo_news
 )
 from stocks_api import yield_trend_change_with_news
@@ -33,7 +34,17 @@ async def example_of_yield_trend_shift():
         if has_shifted:
             print("Trend has shifted")
 
-async def example_of_fetch_news():
+async def example_of_real_fetch_news():
+    news_collector = NewsCollectionAPI([
+        # lambda: yield_twitter_news("AAPL", 10),
+        lambda: yield_yahoo_news("AAPL", 10)
+    ])
+
+    while True:
+        news_collector = await news_collector.fetch_news()
+        print(news_collector.get_n_latest_news(3))
+
+async def example_of_dummy_fetch_news():
     news_collector = NewsCollectionAPI([
         lambda: yield_dummy_twitter_news("AAPL", 10),
         lambda: yield_yahoo_news("AAPL", 10)
@@ -61,4 +72,4 @@ async def example_of_yield_trend_shift_with_news():
 
 
 if __name__ == "__main__":
-    asyncio.run(example_of_fetch_news())
+    asyncio.run(example_of_real_fetch_news())

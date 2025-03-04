@@ -7,6 +7,7 @@ import yfinance as yf
 import tweepy
 
 from stocks_api.structures import News
+from stocks_api.private.monadic import safe_exec
 
 from uuid import uuid4
 
@@ -14,21 +15,22 @@ from uuid import uuid4
 async def yield_yahoo_news(ticker: str, timeout: int) -> typing.AsyncGenerator[News, None]:
     await asyncio.sleep(timeout)
 
-    search = yf.Search(ticker, news_count=1)
+    yahoo_monad = safe_exec(yf.Search, ticker, news_count=1)
 
-    news_articles = search.news
+    if yahoo_monad.is_right():
+        news_articles = yahoo_monad.value.news
 
-    for article in news_articles:
-        yield News(
-            article["title"],
-            article["link"],
-            datetime.fromtimestamp(article["providerPublishTime"]),
-            article["uuid"],
-            "Yahoo"
-        )
+        for article in news_articles:
+            yield News(
+                article["title"],
+                article["link"],
+                datetime.fromtimestamp(article["providerPublishTime"]),
+                article["uuid"],
+                "Yahoo"
+            )
 
 async def yield_twitter_news(
-    keywords: typing.List[str],
+    keyword: str,
     timeout: int
 ) -> typing.AsyncGenerator[News, None]:
 
@@ -37,31 +39,27 @@ async def yield_twitter_news(
     BEARER_TOKEN = os.environ.get("TWITTER_TOKEN", "")
     client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
-    for keyword in keywords:
-        hashtag = f"#{keyword}" 
+    tweets_monad = safe_exec(
+        client.search_recent_tweets, 
+        query=f"#{keyword}",
+        max_results=10, 
+        tweet_fields=["created_at", "author_id"]
+    )
 
-        try:
-            tweets = client.search_recent_tweets(
-                query=hashtag,
-                max_results=10, 
-                tweet_fields=["created_at", "author_id"]
-            )
-        except Exception as exception:
-            print(f"Twitter api returned {type(exception).__name__};\n Skipping")
-        else:
-            if tweets.data:
-                for tweet in tweets:
-                    yield News(
-                        tweet.text,
-                        f"https://twitter.com/{tweet.author_id}/status/{tweet.id}",
-                        tweet.created_at,
-                        tweet.id,
-                        "Twitter"
-                    )
-
+    if tweets_monad.is_right():
+        tweets = tweets_monad.value
+        if tweets.data:
+            for tweet in tweets:
+                yield News(
+                    tweet.text,
+                    f"https://twitter.com/{tweet.author_id}/status/{tweet.id}",
+                    tweet.created_at,
+                    tweet.id,
+                    "Twitter"
+                )
 
 async def yield_dummy_twitter_news(
-    _: typing.List[str],
+    dummy_ticker: str,
     timeout: int
 ) -> typing.AsyncGenerator[News, None]:
     
@@ -69,7 +67,7 @@ async def yield_dummy_twitter_news(
 
     for _ in range(10):
         yield News(
-            "some_text",
+            dummy_ticker,
             f"https://twitter.com/plplp/status/popoop",
             datetime.now(),
             uuid4(),
