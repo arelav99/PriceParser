@@ -4,10 +4,10 @@ import os
 
 import asyncio
 import yfinance as yf
-import tweepy
 
 from stocks_api.structures import News
 from stocks_api.private.monadic import safe_exec
+from stocks_api.callables.news_helpers import create_twitter_client
 
 from uuid import uuid4
 
@@ -36,8 +36,7 @@ async def yield_twitter_news(
 
     await asyncio.sleep(timeout)
 
-    BEARER_TOKEN = os.environ.get("TWITTER_TOKEN", "")
-    client = tweepy.Client(bearer_token=BEARER_TOKEN)
+    client = create_twitter_client()(os.environ)
 
     tweets_monad = safe_exec(
         client.search_recent_tweets, 

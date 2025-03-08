@@ -32,6 +32,16 @@ async def yield_stock_price(
         await asyncio.sleep(sleep_seconds)
 
 
+def analyze_trend(
+    price_data: typing.List[Price], 
+    callables: typing.List[typing.Callable[[typing.List[Price]], Either]]
+) -> Either:
+
+    monad = Either.insert(price_data)
+    for filter_func in callables:
+        monad = monad.then(filter_func)
+    return monad
+
 async def yield_trend_shift(
     price_yielder_func: typing.Callable[..., typing.AsyncGenerator[typing.List[Price], None]],
     callables: typing.List[typing.Callable[[typing.List[Price]], Either]],
@@ -49,12 +59,8 @@ async def yield_trend_shift(
             yield False
             continue
 
-        monad = Either.insert(price_data)
-
-        for filter_func in callables:
-            monad = monad.then(filter_func)
-
-        if monad.is_left():
+        trend_monad = analyze_trend(price_data, callables)
+        if trend_monad.is_left():
             counter_monad = State.insert(supress_signal_for)
             yield True
         else:

@@ -26,6 +26,15 @@ async def example_of_yield_price_api_and_hist():
         for i in batch:
             print(i)
 
+async def example_of_dummy_yield_trend_shift():
+    async for has_shifted in yield_trend_shift(
+        lambda: yield_stock_price('AAPL', '5s', '1mo'),
+        [lambda x: Left(0) if np.random.rand() < 0.9 else Right(0)],
+        supress_signal_for=0
+    ):
+        if has_shifted:
+            print("Trend has shifted")
+
 async def example_of_yield_trend_shift():
     async for has_shifted in yield_trend_shift(
         lambda: yield_stock_price('AAPL', '5s', '1mo'),
@@ -36,7 +45,7 @@ async def example_of_yield_trend_shift():
 
 async def example_of_real_fetch_news():
     news_collector = NewsCollectionAPI([
-        # lambda: yield_twitter_news("AAPL", 10),
+        lambda: yield_twitter_news("AAPL", 10),
         lambda: yield_yahoo_news("AAPL", 10)
     ])
 
@@ -54,7 +63,7 @@ async def example_of_dummy_fetch_news():
         news_collector = await news_collector.fetch_news()
         print(news_collector.get_n_latest_news(3))
 
-async def example_of_yield_trend_shift_with_news():
+async def example_of_yield_dummy_trend_shift_with_news():
     news_collector = NewsCollectionAPI([
         lambda: yield_dummy_twitter_news("AAPL", 10),
         lambda: yield_yahoo_news("AAPL", 10)
@@ -63,7 +72,23 @@ async def example_of_yield_trend_shift_with_news():
     async for news in yield_trend_change_with_news(
         lambda: yield_trend_shift(
             lambda : yield_stock_price('AAPL', '5s', '1mo'),
-            [lambda x: Left(0) if np.random.rand() < 0.4 else Right(0)]
+            [lambda x: Left(0) if np.random.rand() < 0.9 else Right(0)]
+        ),
+        news_collector
+    ):
+
+        print(news)
+
+async def example_of_yield_trend_shift_with_news():
+    news_collector = NewsCollectionAPI([
+        lambda: yield_twitter_news("AAPL", 10),
+        lambda: yield_yahoo_news("AAPL", 10)
+    ])
+
+    async for news in yield_trend_change_with_news(
+        lambda: yield_trend_shift(
+            lambda : yield_stock_price('AAPL', '5s', '1mo'),
+            [trend_has_shifted_linear_reg, trend_has_shifted_cusum, trend_has_shifted_sliding_window]
         ),
         news_collector
     ):
@@ -72,4 +97,4 @@ async def example_of_yield_trend_shift_with_news():
 
 
 if __name__ == "__main__":
-    asyncio.run(example_of_real_fetch_news())
+    asyncio.run(example_of_yield_dummy_trend_shift_with_news())
