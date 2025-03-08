@@ -8,5 +8,7 @@ API diagram looks following
 ![](imgs/FP_architecture.png)
 
 
-If you'd like to use callable to parse twitts, please set path variable TWITTER_TOKEN 
-to your bearer token.
+In order to use twitter news api, please set env variable TWITTER_TOKEN to your API key.
+In order to use finnhub news api, please set env variable FINNHUB_TOKEN to your API key.
+
+Please refer to examples.py to use cases that show how API works.
