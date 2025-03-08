@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import typing
 import os
 
@@ -7,14 +7,12 @@ import yfinance as yf
 
 from stocks_api.structures import News
 from stocks_api.private.monadic import safe_exec
-from stocks_api.callables.news_helpers import create_twitter_client
+from stocks_api.callables.news_helpers import create_twitter_client, create_finnhub_client
 
 from uuid import uuid4
 
 
 async def yield_yahoo_news(ticker: str, timeout: int) -> typing.AsyncGenerator[News, None]:
-    await asyncio.sleep(timeout)
-
     yahoo_monad = safe_exec(yf.Search, ticker, news_count=1)
 
     if yahoo_monad.is_right():
@@ -29,12 +27,12 @@ async def yield_yahoo_news(ticker: str, timeout: int) -> typing.AsyncGenerator[N
                 "Yahoo"
             )
 
+    await asyncio.sleep(timeout)
+
 async def yield_twitter_news(
     keyword: str,
     timeout: int
 ) -> typing.AsyncGenerator[News, None]:
-
-    await asyncio.sleep(timeout)
 
     client = create_twitter_client()(os.environ)
 
@@ -56,13 +54,13 @@ async def yield_twitter_news(
                     tweet.id,
                     "Twitter"
                 )
+    
+    await asyncio.sleep(timeout)
 
 async def yield_dummy_twitter_news(
     dummy_ticker: str,
     timeout: int
 ) -> typing.AsyncGenerator[News, None]:
-    
-    await asyncio.sleep(timeout)
 
     for _ in range(10):
         yield News(
@@ -72,3 +70,29 @@ async def yield_dummy_twitter_news(
             uuid4(),
             "Twitter"
         )
+
+    await asyncio.sleep(timeout)
+
+async def yield_finnhub_news(ticker: str, timeout: int) -> typing.AsyncGenerator[News, None]:
+    client = create_finnhub_client()(os.environ)
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    finnhub_news = safe_exec(
+        client.company_news,
+        symbol=ticker,
+        _from=yesterday.strftime("%Y-%m-%d"),
+        to=today.strftime("%Y-%m-%d")
+    )
+
+    if finnhub_news.is_right():
+        for news in finnhub_news.value:
+            yield News(
+                ticker,
+                news["url"],
+                datetime.fromtimestamp(news["datetime"]),
+                str(news["id"]),
+                "Finnhub"
+            )
+
+    await asyncio.sleep(timeout)

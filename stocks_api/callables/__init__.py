@@ -1,7 +1,8 @@
 from stocks_api.callables.news_callables import (
     yield_yahoo_news,
     yield_twitter_news,
-    yield_dummy_twitter_news
+    yield_dummy_twitter_news,
+    yield_finnhub_news
 )
 from stocks_api.callables.trend_approximation_callables import (
     trend_has_shifted_linear_reg,
