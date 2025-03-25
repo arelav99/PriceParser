@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime
 import typing
 
@@ -23,15 +24,16 @@ class NewsCollectionAPI:
             )
 
     async def fetch_news(self):
+        time_sorted_news = copy(self.__time_sorted_news)
         for news_generator in self.generators:
             async for news in news_generator():
-                if news.uuid not in self.__time_sorted_news.uuid.values:
-                    self.__time_sorted_news = pd.concat([
-                        self.__time_sorted_news,
+                if news.uuid not in time_sorted_news.uuid.values:
+                    time_sorted_news = pd.concat([
+                        time_sorted_news,
                         pd.DataFrame([news.__dict__])
                     ])
 
-        return NewsCollectionAPI(self.generators, self.__time_sorted_news)
+        return NewsCollectionAPI(self.generators, time_sorted_news)
 
     def get_n_latest_news_in_range(self, n_news: int, start_date: datetime, end_date: datetime):
         return self.__time_sorted_news[
