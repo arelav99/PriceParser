@@ -13,7 +13,7 @@ from uuid import uuid4
 
 
 async def yield_yahoo_news(ticker: str, timeout: int) -> typing.AsyncGenerator[News, None]:
-    yahoo_monad = safe_exec(yf.Search, ticker, news_count=1)
+    yahoo_monad = safe_exec(yf.Search, ticker, news_count=10)
 
     if yahoo_monad.is_right():
         news_articles = yahoo_monad.value.news
@@ -84,7 +84,6 @@ async def yield_finnhub_news(ticker: str, timeout: int) -> typing.AsyncGenerator
         _from=yesterday.strftime("%Y-%m-%d"),
         to=today.strftime("%Y-%m-%d")
     )
-
     if finnhub_news.is_right():
         for news in finnhub_news.value:
             yield News(

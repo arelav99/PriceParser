@@ -46,9 +46,9 @@ async def example_of_yield_trend_shift():
 
 async def example_of_real_fetch_news():
     news_collector = NewsCollectionAPI([
-        lambda: yield_twitter_news("AAPL", 10),
-        lambda: yield_yahoo_news("AAPL", 10),
-        lambda: yield_finnhub_news('AAPL', 10)
+        lambda: yield_twitter_news("AAPL", 5),
+        lambda: yield_yahoo_news("AAPL", 5),
+        lambda: yield_finnhub_news('AAPL', 5)
     ])
 
     while True:
@@ -84,9 +84,9 @@ async def example_of_yield_dummy_trend_shift_with_news():
 
 async def example_of_yield_trend_shift_with_news():
     news_collector = NewsCollectionAPI([
-        lambda: yield_twitter_news("AAPL", 10),
-        lambda: yield_yahoo_news("AAPL", 10),
-        lambda: yield_finnhub_news('AAPL', 10)
+        lambda: yield_twitter_news("AAPL", 5),
+        lambda: yield_yahoo_news("AAPL", 5),
+        lambda: yield_finnhub_news('AAPL', 5)
     ])
 
     async for news in yield_trend_change_with_news(
@@ -101,4 +101,18 @@ async def example_of_yield_trend_shift_with_news():
 
 
 if __name__ == "__main__":
-    asyncio.run(example_of_real_fetch_news())
+    # asyncio.run(example_of_yield_price_api())
+
+    # asyncio.run(example_of_yield_price_api_and_hist())
+
+    # asyncio.run(example_of_dummy_yield_trend_shift())
+
+    # asyncio.run(example_of_yield_trend_shift())
+
+    # asyncio.run(example_of_real_fetch_news())
+
+    # asyncio.run(example_of_dummy_fetch_news())
+
+    # asyncio.run(example_of_yield_dummy_trend_shift_with_news())
+
+    asyncio.run(example_of_yield_trend_shift_with_news())
